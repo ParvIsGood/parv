@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JEE Main Cutoffs 2025 | JoSAA + CSAB</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+  <header class="site-header">
+    <div class="brand">
+      <div class="badge">2025</div>
+      <div>
+        <h1>JEE Main Cutoffs</h1>
+        <p>All institutes · JoSAA + CSAB · Opening & Closing Ranks</p>
+      </div>
+    </div>
+    <div class="source-note">
+      <span>Sources:</span>
+      <a href="https://josaa.admissions.nic.in/applicant/SeatAllotmentResult/CurrentORCR.aspx" target="_blank" rel="noopener">JoSAA OR-CR</a>
+      <a href="https://admissions.nic.in/csabspl/Applicant/SeatAllotmentResult/CurrentORCR.aspx" target="_blank" rel="noopener">CSAB OR-CR</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel hero">
+      <div class="hero-text">
+        <h2>Find the exact cutoff you need</h2>
+        <p>Filter by round, institute, program, seat type, quota, and gender. Export results to CSV with a click.</p>
+      </div>
+      <div class="status" id="status">
+        <div class="status-title">Data status</div>
+        <div class="status-body" id="statusBody">Loading datasets...</div>
+      </div>
+    </section>
+
+    <section class="panel profile">
+      <div class="profile-header">
+        <h3>Your Profile</h3>
+        <p>Enter your details to estimate rank and see available choices.</p>
+      </div>
+      <div class="profile-grid">
+        <label>
+          Category
+          <select id="profile-category"></select>
+        </label>
+        <label>
+          Home State / Quota
+          <select id="profile-quota"></select>
+        </label>
+        <label>
+          Gender
+          <select id="profile-gender"></select>
+        </label>
+        <label>
+          Percentile
+          <input id="profile-percentile" type="number" min="0" max="100" step="0.0001" placeholder="e.g. 98.7654" />
+        </label>
+        <label class="search">
+          Branch Preferences
+          <input id="profile-branches" type="text" placeholder="e.g. Computer Science, Electrical" />
+        </label>
+      </div>
+      <div class="profile-actions">
+        <button id="profile-apply">Show Choices</button>
+        <div class="profile-rank" id="profile-rank">Estimated Rank: -</div>
+      </div>
+    </section>
+
+    <section class="panel controls">
+      <div class="dataset-toggle">
+        <label class="toggle">
+          <input type="radio" name="dataset" value="josaa" checked />
+          <span>JoSAA 2025</span>
+        </label>
+        <label class="toggle">
+          <input type="radio" name="dataset" value="csab" />
+          <span>CSAB 2025</span>
+        </label>
+      </div>
+
+      <div class="filters">
+        <label>
+          Round
+          <select id="filter-round"></select>
+        </label>
+        <label>
+          Institute Type
+          <select id="filter-inst-type"></select>
+        </label>
+        <label>
+          Institute
+          <select id="filter-inst"></select>
+        </label>
+        <label>
+          Program
+          <select id="filter-program"></select>
+        </label>
+        <label>
+          Seat Type / Category
+          <select id="filter-seat"></select>
+        </label>
+        <label>
+          Quota
+          <select id="filter-quota"></select>
+        </label>
+        <label>
+          Gender
+          <select id="filter-gender"></select>
+        </label>
+        <label class="search">
+          Search
+          <input id="search" type="text" placeholder="Type institute or program..." />
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="reset">Reset filters</button>
+        <button id="export">Export CSV</button>
+      </div>
+    </section>
+
+    <section class="panel results">
+      <div class="results-meta">
+        <div id="count">0 results</div>
+        <div class="pager">
+          <button id="prev">Prev</button>
+          <span id="pageInfo">Page 1</span>
+          <button id="next">Next</button>
+        </div>
+      </div>
+
+      <div class="choices" id="choicesPanel">
+        <div class="choices-title">Available Choices (Based on Your Profile)</div>
+        <div id="choicesCount">0 choices</div>
+        <div class="table-wrap">
+          <table id="choices">
+            <thead>
+              <tr>
+                <th data-key="round">Round</th>
+                <th data-key="institute_type">Institute Type</th>
+                <th data-key="institute">Institute</th>
+                <th data-key="program">Program</th>
+                <th data-key="seat_type">Seat Type</th>
+                <th data-key="quota">Quota</th>
+                <th data-key="gender">Gender</th>
+                <th data-key="opening_rank">Opening Rank</th>
+                <th data-key="closing_rank">Closing Rank</th>
+              </tr>
+            </thead>
+            <tbody id="choicesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="results">
+          <thead>
+            <tr>
+              <th data-key="round">Round</th>
+              <th data-key="institute_type">Institute Type</th>
+              <th data-key="institute">Institute</th>
+              <th data-key="program">Program</th>
+              <th data-key="seat_type">Seat Type</th>
+              <th data-key="quota">Quota</th>
+              <th data-key="gender">Gender</th>
+              <th data-key="opening_rank">Opening Rank</th>
+              <th data-key="closing_rank">Closing Rank</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>Built for 2025 cutoffs. Use the fetch scripts to pull official data into the data folder.</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

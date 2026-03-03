@@ -1,0 +1,9 @@
+{
+  "meta": {
+    "source": "https://admissions.nic.in/csabspl/Applicant/SeatAllotmentResult/CurrentORCR.aspx",
+    "year": 2025,
+    "updated": "2026-03-03",
+    "notes": "Generated via fetch_orcr.py"
+  },
+  "rows": []
+}
