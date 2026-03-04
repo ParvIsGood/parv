@@ -8,12 +8,13 @@
 </head>
 <body>
   <div class="bg"></div>
+
   <header class="site-header">
     <div class="brand">
-      <div class="badge">2025</div>
+      <div class="badge-year">2025</div>
       <div>
         <h1>JEE Main Cutoffs</h1>
-        <p>All institutes · JoSAA + CSAB · Opening & Closing Ranks</p>
+        <p>All institutes · JoSAA + CSAB · Opening &amp; Closing Ranks</p>
       </div>
     </div>
     <div class="source-note">
@@ -24,129 +25,144 @@
   </header>
 
   <main>
-    <section class="panel hero">
-      <div class="hero-text">
-        <h2>Find the exact cutoff you need</h2>
-        <p>Filter by round, institute, program, seat type, quota, and gender. Export results to CSV with a click.</p>
-      </div>
-      <div class="status" id="status">
-        <div class="status-title">Data status</div>
-        <div class="status-body" id="statusBody">Loading datasets...</div>
+
+    <!-- ── Status ── -->
+    <section class="panel status-panel">
+      <div class="status-inner">
+        <div class="status-dot" id="statusDot"></div>
+        <div id="statusBody">Loading datasets…</div>
       </div>
     </section>
 
-    <section class="panel profile">
-      <div class="profile-header">
-        <h3>Your Profile</h3>
-        <p>Enter your details to estimate rank and see available choices.</p>
+    <!-- ── Profile ── -->
+    <section class="panel profile-panel">
+      <div class="panel-header">
+        <h2>Your Profile</h2>
+        <p>Enter your details to see all colleges available to you.</p>
       </div>
+
       <div class="profile-grid">
-        <label>
-          Category
+        <label class="field">
+          <span class="field-label">Category</span>
           <select id="profile-category"></select>
         </label>
-        <label>
-          Home State / Quota
+        <label class="field">
+          <span class="field-label">Home State / Quota</span>
           <select id="profile-quota"></select>
         </label>
-        <label>
-          Gender
+        <label class="field">
+          <span class="field-label">Gender</span>
           <select id="profile-gender"></select>
         </label>
-        <label>
-          Percentile
-          <input id="profile-percentile" type="number" min="0" max="100" step="0.0001" placeholder="e.g. 98.7654" />
+        <label class="field">
+          <span class="field-label">JEE Main Percentile</span>
+          <input id="profile-percentile" type="number" min="0" max="100" step="0.0001"
+                 placeholder="e.g. 98.7654" />
         </label>
-        <label class="search">
-          Branch Preferences
+        <label class="field field-wide">
+          <span class="field-label">Branch Preferences <span class="hint">(comma-separated, optional)</span></span>
           <input id="profile-branches" type="text" placeholder="e.g. Computer Science, Electrical" />
         </label>
       </div>
+
       <div class="profile-actions">
-        <button id="profile-apply">Show Choices</button>
-        <div class="profile-rank" id="profile-rank">Estimated Rank: -</div>
+        <button id="profile-apply" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Show Choices
+        </button>
+        <div class="rank-display" id="profile-rank">Enter percentile →</div>
       </div>
     </section>
 
-    <section class="panel controls">
-      <div class="dataset-toggle">
-        <label class="toggle">
-          <input type="radio" name="dataset" value="josaa" checked />
-          <span>JoSAA 2025</span>
-        </label>
-        <label class="toggle">
-          <input type="radio" name="dataset" value="csab" />
-          <span>CSAB 2025</span>
-        </label>
-      </div>
-
-      <div class="filters">
-        <label>
-          Round
-          <select id="filter-round"></select>
-        </label>
-        <label>
-          Institute Type
-          <select id="filter-inst-type"></select>
-        </label>
-        <label>
-          Institute
-          <select id="filter-inst"></select>
-        </label>
-        <label>
-          Program
-          <select id="filter-program"></select>
-        </label>
-        <label>
-          Seat Type / Category
-          <select id="filter-seat"></select>
-        </label>
-        <label>
-          Quota
-          <select id="filter-quota"></select>
-        </label>
-        <label>
-          Gender
-          <select id="filter-gender"></select>
-        </label>
-        <label class="search">
-          Search
-          <input id="search" type="text" placeholder="Type institute or program..." />
-        </label>
-      </div>
-
-      <div class="actions">
-        <button id="reset">Reset filters</button>
-        <button id="export">Export CSV</button>
-      </div>
-    </section>
-
-    <section class="panel results">
-      <div class="results-meta">
-        <div id="count">0 results</div>
-        <div class="pager">
-          <button id="prev">Prev</button>
-          <span id="pageInfo">Page 1</span>
-          <button id="next">Next</button>
+    <!-- ── Dataset + Filters ── -->
+    <section class="panel controls-panel">
+      <div class="controls-top">
+        <div class="dataset-toggle" role="group" aria-label="Dataset">
+          <label class="toggle-pill">
+            <input type="radio" name="dataset" value="josaa" checked />
+            <span>JoSAA 2025</span>
+          </label>
+          <label class="toggle-pill">
+            <input type="radio" name="dataset" value="csab" />
+            <span>CSAB 2025</span>
+          </label>
+        </div>
+        <div class="controls-actions">
+          <button id="reset" class="btn btn-ghost">Reset filters</button>
+          <button id="export" class="btn btn-primary">Export CSV</button>
         </div>
       </div>
 
-      <div class="choices" id="choicesPanel">
-        <div class="choices-title">Available Choices (Based on Your Profile)</div>
-        <div id="choicesCount">0 choices</div>
+      <div class="filters-grid">
+        <label class="field">
+          <span class="field-label">Round</span>
+          <select id="filter-round"></select>
+        </label>
+        <label class="field">
+          <span class="field-label">Institute Type</span>
+          <select id="filter-inst-type"></select>
+        </label>
+        <label class="field">
+          <span class="field-label">Institute</span>
+          <select id="filter-inst"></select>
+        </label>
+        <label class="field">
+          <span class="field-label">Program</span>
+          <select id="filter-program"></select>
+        </label>
+        <label class="field">
+          <span class="field-label">Seat Type / Category</span>
+          <select id="filter-seat"></select>
+        </label>
+        <label class="field">
+          <span class="field-label">Quota</span>
+          <select id="filter-quota"></select>
+        </label>
+        <label class="field">
+          <span class="field-label">Gender</span>
+          <select id="filter-gender"></select>
+        </label>
+        <label class="field">
+          <span class="field-label">Search</span>
+          <input id="search" type="text" placeholder="Institute or program…" />
+        </label>
+      </div>
+    </section>
+
+    <!-- ── Results ── -->
+    <section class="panel results-panel">
+
+      <!-- Choices sub-panel -->
+      <div class="choices-panel" id="choicesPanel">
+        <div class="sub-header">
+          <div>
+            <h3 class="sub-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Available Choices
+            </h3>
+            <div class="sub-desc" id="choicesCount">Enter your percentile to see choices.</div>
+          </div>
+          <div class="legend">
+            <span class="badge badge-4">Very High</span>
+            <span class="badge badge-3">High</span>
+            <span class="badge badge-2">Medium</span>
+            <span class="badge badge-1">Low</span>
+          </div>
+        </div>
         <div class="table-wrap">
-          <table id="choices">
+          <table id="choices" aria-label="Available choices based on your profile">
             <thead>
               <tr>
                 <th data-key="round">Round</th>
-                <th data-key="institute_type">Institute Type</th>
+                <th data-key="institute_type">Type</th>
                 <th data-key="institute">Institute</th>
                 <th data-key="program">Program</th>
                 <th data-key="seat_type">Seat Type</th>
                 <th data-key="quota">Quota</th>
                 <th data-key="gender">Gender</th>
-                <th data-key="opening_rank">Opening Rank</th>
-                <th data-key="closing_rank">Closing Rank</th>
+                <th data-key="opening_rank">OR</th>
+                <th data-key="closing_rank">CR</th>
+                <th data-key="chances">Chances</th>
               </tr>
             </thead>
             <tbody id="choicesBody"></tbody>
@@ -154,29 +170,45 @@
         </div>
       </div>
 
+      <div class="divider"></div>
+
+      <!-- Full data table -->
+      <div class="results-meta">
+        <div class="results-count" id="count">0 results</div>
+        <div class="pager">
+          <button id="prev" class="btn btn-ghost btn-sm">← Prev</button>
+          <span id="pageInfo" class="page-info">Page 1</span>
+          <button id="next" class="btn btn-ghost btn-sm">Next →</button>
+        </div>
+      </div>
+
       <div class="table-wrap">
-        <table id="results">
+        <table id="results" aria-label="All cutoff data">
           <thead>
             <tr>
               <th data-key="round">Round</th>
-              <th data-key="institute_type">Institute Type</th>
+              <th data-key="institute_type">Type</th>
               <th data-key="institute">Institute</th>
               <th data-key="program">Program</th>
               <th data-key="seat_type">Seat Type</th>
               <th data-key="quota">Quota</th>
               <th data-key="gender">Gender</th>
-              <th data-key="opening_rank">Opening Rank</th>
-              <th data-key="closing_rank">Closing Rank</th>
+              <th data-key="opening_rank">OR</th>
+              <th data-key="closing_rank">CR</th>
             </tr>
           </thead>
           <tbody id="resultsBody"></tbody>
         </table>
       </div>
     </section>
+
   </main>
 
   <footer class="site-footer">
-    <div>Built for 2025 cutoffs. Use the fetch scripts to pull official data into the data folder.</div>
+    <div class="footer-inner">
+      <span>JEE Main Cutoffs 2025 · JoSAA + CSAB data</span>
+      <span class="footer-note">Run <code>fetch_orcr.py</code> to pull live official data.</span>
+    </div>
   </footer>
 
   <script src="app.js"></script>
