@@ -301,6 +301,25 @@ tr:hover td {
   background: #fff8f0;
 }
 
+tr.eligible td {
+  background: #eef8f0;
+}
+
+tr.eligible:hover td {
+  background: #d8f0de;
+}
+
+th.sort-asc::after  { content: " ↑"; color: var(--accent); }
+th.sort-desc::after { content: " ↓"; color: var(--accent); }
+
+input[type="number"] {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
 .site-footer {
   padding: 18px 6vw 36px;
   color: var(--muted);
