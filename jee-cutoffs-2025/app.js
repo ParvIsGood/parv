@@ -6,9 +6,9 @@
 "use strict";
 
 // ── Constants ──────────────────────────────────────────────────────────────
-// JEE Main 2024 total appeared candidates (~13.4 lakh); used as proxy until
-// official 2025 figures are published.
-const TOTAL_CANDIDATES = 1338704;
+// Rank formula per spec: rank = (100 − percentile) × RANK_SCALE
+// JEE Main 2025 scale factor (≈ 16 000 ranks per percentile point).
+const RANK_SCALE = 16000;
 const PAGE_SIZE = 50;
 const MAX_CHOICES_DISPLAY = 200; // cap choices table to avoid DOM overload
 
@@ -29,7 +29,23 @@ function percentileToRank(p) {
   if (p == null || p === "" || isNaN(+p)) return null;
   const pct = parseFloat(p);
   if (pct < 0 || pct > 100) return null;
-  return Math.max(1, Math.ceil((1 - pct / 100) * TOTAL_CANDIDATES));
+  return Math.max(1, Math.round((100 - pct) * RANK_SCALE));
+}
+
+/**
+ * Returns a chances object for a user rank vs a cutoff row.
+ * Level 4 = Very High, 3 = High, 2 = Medium, 1 = Low, 0 = Not Eligible.
+ */
+function getChances(rank, openingRank, closingRank) {
+  const open = +openingRank;
+  const close = +closingRank;
+  if (!close || rank > close) return { label: "Not Eligible", level: 0 };
+  if (rank <= open)           return { label: "Very High",    level: 4 };
+  const spread = close - open || 1;
+  const pos = (rank - open) / spread; // 0→1 across the admitted range
+  if (pos <= 0.33) return { label: "High",   level: 3 };
+  if (pos <= 0.67) return { label: "Medium", level: 2 };
+  return              { label: "Low",    level: 1 };
 }
 
 function parseBranchPreferences(raw) {
@@ -94,6 +110,8 @@ async function loadData() {
     `JoSAA: <strong>${josaaRows.length.toLocaleString()}</strong> rows &nbsp;|&nbsp; ` +
     `CSAB: <strong>${csabRows.length.toLocaleString()}</strong> rows &nbsp;|&nbsp; ` +
     `Total: <strong>${total.toLocaleString()}</strong>`;
+  const dot = document.getElementById("statusDot");
+  if (dot) dot.className = "status-dot " + (total > 0 ? "ready" : "error");
 
   // Default to josaa dataset
   activeRows = josaaRows;
@@ -257,7 +275,6 @@ function applyProfile() {
 }
 
 function renderChoices() {
-  const panel = document.getElementById("choicesPanel");
   const countEl = document.getElementById("choicesCount");
   const tbody = document.getElementById("choicesBody");
 
@@ -265,12 +282,14 @@ function renderChoices() {
     countEl.textContent =
       userRank
         ? "No matching choices found. Try adjusting your profile filters."
-        : "Enter your percentile to see choices.";
+        : "Enter your percentile above to see your available choices.";
     tbody.innerHTML = "";
     return;
   }
 
-  countEl.textContent = `${choicesRows.length.toLocaleString()} choice${choicesRows.length !== 1 ? "s" : ""} found (rank ≤ closing rank)`;
+  countEl.textContent =
+    `${choicesRows.length.toLocaleString()} choice${choicesRows.length !== 1 ? "s" : ""} ` +
+    `found (your rank ≤ closing rank)`;
   tbody.innerHTML = "";
   const capped = choicesRows.length > MAX_CHOICES_DISPLAY;
   choicesRows.slice(0, MAX_CHOICES_DISPLAY).forEach((r) => {
@@ -279,9 +298,10 @@ function renderChoices() {
   if (capped) {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
-    td.colSpan = 9;
+    td.colSpan = 10;
     td.className = "choices-cap-note";
-    td.textContent = `Showing top ${MAX_CHOICES_DISPLAY} of ${choicesRows.length.toLocaleString()} choices. Use filters to narrow results.`;
+    td.textContent =
+      `Showing top ${MAX_CHOICES_DISPLAY} of ${choicesRows.length.toLocaleString()} choices. Use filters or branch preferences to narrow results.`;
     tr.appendChild(td);
     tbody.appendChild(tr);
   }
@@ -306,27 +326,28 @@ function renderResults() {
   slice.forEach((r) => tbody.appendChild(buildRow(r, false)));
 }
 
-function buildRow(r, highlight) {
+function buildRow(r, isChoice) {
   const tr = document.createElement("tr");
-  if (highlight && userRank) {
-    const close = +r.closing_rank;
-    if (userRank <= close) tr.classList.add("eligible");
-  }
-  [
-    r.round,
-    r.institute_type,
-    r.institute,
-    r.program,
-    r.seat_type,
-    r.quota,
-    r.gender,
-    r.opening_rank,
-    r.closing_rank,
-  ].forEach((val) => {
+  const fields = [
+    r.round, r.institute_type, r.institute, r.program,
+    r.seat_type, r.quota, r.gender, r.opening_rank, r.closing_rank,
+  ];
+  fields.forEach((val) => {
     const td = document.createElement("td");
     td.textContent = val ?? "";
     tr.appendChild(td);
   });
+
+  if (isChoice) {
+    const chances = getChances(userRank, r.opening_rank, r.closing_rank);
+    const td = document.createElement("td");
+    const badge = document.createElement("span");
+    badge.className = `badge badge-${chances.level}`;
+    badge.textContent = chances.label;
+    td.appendChild(badge);
+    tr.appendChild(td);
+    tr.classList.add("eligible");
+  }
   return tr;
 }
 
@@ -381,9 +402,10 @@ function resetFilters() {
   document.getElementById("search").value = "";
   sortKey = null;
   sortAsc = true;
-  document.querySelectorAll("#results th[data-key], #choices th[data-key]").forEach((th) =>
-    th.classList.remove("sort-asc", "sort-desc")
-  );
+  document.querySelectorAll("#results th[data-key], #choices th[data-key]").forEach((th) => {
+    th.classList.remove("sort-asc", "sort-desc");
+    th.removeAttribute("aria-sort");
+  });
   applyFilters();
 }
 
