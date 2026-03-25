@@ -90,7 +90,7 @@ def download_reel(loader: Instaloader, shortcode: str, base_dir: Path) -> Path:
 
     target_dir = base_dir / shortcode
     if not target_dir.exists():
-        return target_dir
+        raise InstaloaderException(f"Download for {shortcode} did not produce {target_dir}")
     video = next(iter(target_dir.glob(f"{shortcode}*.mp4")), None)
     return video or target_dir
 
@@ -133,9 +133,9 @@ def resolve_output_path(raw: str) -> Path:
     candidate = Path(raw).expanduser()
     resolved = candidate.resolve()
     cwd = Path.cwd().resolve()
-    if resolved == cwd or cwd in resolved.parents:
-        return resolved
-    raise ValueError(f"Output directory {resolved} must stay within the current working directory {cwd}.")
+    if resolved != cwd and cwd not in resolved.parents:
+        raise ValueError(f"Output directory {resolved} must stay within the current working directory {cwd}.")
+    return resolved
 
 
 def main() -> int:
