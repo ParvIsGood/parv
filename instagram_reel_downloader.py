@@ -79,12 +79,12 @@ def download_reel(loader: Instaloader, shortcode: str, base_dir: Path) -> Path:
     try:
         post = Post.from_shortcode(loader.context, shortcode)
     except InstaloaderException as exc:
-        raise InstaloaderException(f"Failed to fetch metadata for {shortcode}: {exc}") from exc
+        raise InstaloaderException(f"Failed to fetch metadata for {shortcode}") from exc
 
     try:
         loader.download_post(post, target=shortcode)
     except InstaloaderException as exc:
-        raise InstaloaderException(f"Failed to download reel {shortcode}: {exc}") from exc
+        raise InstaloaderException(f"Failed to download reel {shortcode}") from exc
 
     target_dir = base_dir / shortcode
     video = next(iter(target_dir.glob(f"{shortcode}*.mp4")), None)
