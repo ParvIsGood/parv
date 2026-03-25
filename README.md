@@ -20,8 +20,8 @@ Automate downloading Instagram Reels (public or accessible private reels) with t
 
    # Private reels (use a session cookie or credentials)
    python instagram_reel_downloader.py https://www.instagram.com/reel/<shortcode>/ --sessionid <your_sessionid>
-   # or
-   python instagram_reel_downloader.py https://www.instagram.com/reel/<shortcode>/ --username <user> --password <pass>
+   # or (prompts for password)
+   python instagram_reel_downloader.py https://www.instagram.com/reel/<shortcode>/ --username <user>
    ```
 
 The script saves each reel inside `downloads/reels/<shortcode>/` with the video file named after the shortcode. Use a browser export (Developer Tools → Application → Cookies) to get a valid `sessionid` for private reels. Respect Instagram's Terms of Use when automating downloads.

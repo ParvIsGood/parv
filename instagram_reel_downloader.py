@@ -23,7 +23,7 @@ from instaloader import (
 )
 from requests.cookies import RequestsCookieJar
 
-SHORTCODE_RE = re.compile(r"(?:instagram\.com/(?:reel|reels|p|tv)/)([A-Za-z0-9_-]+)")
+SHORTCODE_RE = re.compile(r"(?:https?://)?(?:www\.)?instagram\.com/(?:reel|reels|p|tv)/([A-Za-z0-9_-]+)", re.IGNORECASE)
 MIN_SHORTCODE_LENGTH = 5
 
 
@@ -57,7 +57,7 @@ def configure_loader(output_dir: Path) -> Instaloader:
     return loader
 
 
-def apply_auth(loader: Instaloader, username: Optional[str], password: Optional[str], sessionid: Optional[str]) -> None:
+def apply_auth(loader: Instaloader, username: Optional[str], sessionid: Optional[str]) -> None:
     ctx = loader.context
     if sessionid:
         # sessionid cookie avoids interactive login prompts; works for accounts with existing access.
@@ -68,7 +68,7 @@ def apply_auth(loader: Instaloader, username: Optional[str], password: Optional[
         ctx.log("Using provided sessionid cookie for authentication.")
         return
     if username:
-        pwd = password or getpass.getpass("Instagram password (input hidden): ")
+        pwd = getpass.getpass("Instagram password (input hidden): ")
         ctx.log(f"Logging in as {username}...")
         loader.login(username, pwd)
         return
@@ -83,10 +83,10 @@ def download_reel(loader: Instaloader, shortcode: str, base_dir: Path) -> Path:
     return video or target_dir
 
 
-def download_many(urls: Iterable[str], output_dir: Path, username: Optional[str], password: Optional[str], sessionid: Optional[str]) -> int:
+def download_many(urls: Iterable[str], output_dir: Path, username: Optional[str], sessionid: Optional[str]) -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     loader = configure_loader(output_dir)
-    apply_auth(loader, username, password, sessionid)
+    apply_auth(loader, username, sessionid)
     successes = 0
 
     for raw in urls:
@@ -110,7 +110,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory to store downloaded reels (default: downloads/reels)",
     )
     parser.add_argument("--username", help="Instagram username (only needed for private reels)")
-    parser.add_argument("--password", help="Instagram password (omit to prompt securely)")
     parser.add_argument(
         "--sessionid",
         help="Instagram sessionid cookie value. Recommended for automation; bypasses interactive login.",
@@ -118,12 +117,22 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def resolve_output_path(raw: str) -> Path:
+    candidate = Path(raw).expanduser()
+    if any(part == ".." for part in candidate.parts):
+        raise ValueError("Output directory cannot contain '..' segments.")
+    return candidate.resolve()
+
+
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
-    output_dir = Path(args.output).expanduser().resolve()
+    try:
+        output_dir = resolve_output_path(args.output)
+    except ValueError as exc:
+        parser.error(str(exc))
 
-    successes = download_many(args.urls, output_dir, args.username, args.password, args.sessionid)
+    successes = download_many(args.urls, output_dir, args.username, args.sessionid)
     if successes == 0:
         return 1
     return 0
