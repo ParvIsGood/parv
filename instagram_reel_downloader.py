@@ -23,7 +23,7 @@ from instaloader import (
 )
 from requests.cookies import RequestsCookieJar
 
-SHORTCODE_RE = re.compile(r"(?:https?://)?(?:www\.)?instagram\.com/reel/([A-Za-z0-9_-]+)", re.IGNORECASE)
+SHORTCODE_RE = re.compile(r"(?:https?://)?(?:www\.)?instagram\.com/reel/([A-Za-z0-9_-]+)(?:/|$)", re.IGNORECASE)
 MIN_SHORTCODE_LENGTH = 5
 
 
@@ -89,6 +89,8 @@ def download_reel(loader: Instaloader, shortcode: str, base_dir: Path) -> Path:
         raise InstaloaderException(f"Failed to download reel {shortcode}: {detail}") from exc
 
     target_dir = base_dir / shortcode
+    if not target_dir.exists():
+        return target_dir
     video = next(iter(target_dir.glob(f"{shortcode}*.mp4")), None)
     return video or target_dir
 
@@ -131,9 +133,9 @@ def resolve_output_path(raw: str) -> Path:
     candidate = Path(raw).expanduser()
     resolved = candidate.resolve()
     cwd = Path.cwd().resolve()
-    if resolved != cwd and cwd not in resolved.parents:
-        raise ValueError(f"Output directory {resolved} must stay within the current working directory {cwd}.")
-    return resolved
+    if resolved == cwd or cwd in resolved.parents:
+        return resolved
+    raise ValueError(f"Output directory {resolved} must stay within the current working directory {cwd}.")
 
 
 def main() -> int:
