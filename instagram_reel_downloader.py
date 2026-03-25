@@ -23,7 +23,7 @@ from instaloader import (
 )
 from requests.cookies import RequestsCookieJar
 
-SHORTCODE_RE = re.compile(r"(?:https?://)?(?:www\.)?instagram\.com/(?:reel|p|tv)/([A-Za-z0-9_-]+)", re.IGNORECASE)
+SHORTCODE_RE = re.compile(r"(?:https?://)?(?:www\.)?instagram\.com/reel/([A-Za-z0-9_-]+)", re.IGNORECASE)
 MIN_SHORTCODE_LENGTH = 5
 
 
