@@ -23,7 +23,7 @@ from instaloader import (
 )
 from requests.cookies import RequestsCookieJar
 
-SHORTCODE_RE = re.compile(r"(?:https?://)?(?:www\.)?instagram\.com/(?:reel|reels|p|tv)/([A-Za-z0-9_-]+)", re.IGNORECASE)
+SHORTCODE_RE = re.compile(r"(?:https?://)?(?:www\.)?instagram\.com/(?:reel|p|tv)/([A-Za-z0-9_-]+)", re.IGNORECASE)
 MIN_SHORTCODE_LENGTH = 5
 
 
@@ -76,8 +76,16 @@ def apply_auth(loader: Instaloader, username: Optional[str], sessionid: Optional
 
 
 def download_reel(loader: Instaloader, shortcode: str, base_dir: Path) -> Path:
-    post = Post.from_shortcode(loader.context, shortcode)
-    loader.download_post(post, target=shortcode)
+    try:
+        post = Post.from_shortcode(loader.context, shortcode)
+    except InstaloaderException as exc:
+        raise InstaloaderException(f"Failed to fetch metadata for {shortcode}: {exc}") from exc
+
+    try:
+        loader.download_post(post, target=shortcode)
+    except InstaloaderException as exc:
+        raise InstaloaderException(f"Failed to download reel {shortcode}: {exc}") from exc
+
     target_dir = base_dir / shortcode
     video = next(iter(target_dir.glob(f"{shortcode}*.mp4")), None)
     return video or target_dir
@@ -119,9 +127,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 def resolve_output_path(raw: str) -> Path:
     candidate = Path(raw).expanduser()
-    if any(part == ".." for part in candidate.parts):
-        raise ValueError("Output directory cannot contain '..' segments.")
-    return candidate.resolve()
+    resolved = candidate.resolve()
+    if not resolved.is_relative_to(Path.cwd()):
+        raise ValueError("Output directory must stay within the current working directory.")
+    return resolved
 
 
 def main() -> int:
