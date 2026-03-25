@@ -41,6 +41,7 @@ def extract_shortcode(candidate: str) -> str:
 
 
 def configure_loader(output_dir: Path) -> Instaloader:
+    # Store each reel in its own folder to keep assets grouped and avoid filename collisions.
     loader = Instaloader(dirname_pattern=str(output_dir / "{target}"), filename_pattern="{shortcode}")
 
     def set_if_exists(attr: str, value):
@@ -133,8 +134,10 @@ def resolve_output_path(raw: str) -> Path:
     candidate = Path(raw).expanduser()
     resolved = candidate.resolve()
     cwd = Path.cwd().resolve()
-    if resolved != cwd and cwd not in resolved.parents:
-        raise ValueError(f"Output directory {resolved} must stay within the current working directory {cwd}.")
+    try:
+        resolved.relative_to(cwd)
+    except ValueError as exc:
+        raise ValueError(f"Output directory {resolved} must stay within the current working directory {cwd}.") from exc
     return resolved
 
 
