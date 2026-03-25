@@ -43,16 +43,16 @@ def extract_shortcode(candidate: str) -> str:
 def configure_loader(output_dir: Path) -> Instaloader:
     loader = Instaloader(dirname_pattern=str(output_dir / "{target}"), filename_pattern="{shortcode}")
 
-    def maybe_set(attr: str, value):
+    def set_if_exists(attr: str, value):
         if hasattr(loader, attr):
             setattr(loader, attr, value)
 
-    maybe_set("download_comments", False)
-    maybe_set("save_metadata", False)
-    maybe_set("compress_json", False)
-    maybe_set("download_geotags", False)
-    maybe_set("download_video_thumbnails", False)
-    maybe_set("post_metadata_txt_pattern", "")
+    set_if_exists("download_comments", False)
+    set_if_exists("save_metadata", False)
+    set_if_exists("compress_json", False)
+    set_if_exists("download_geotags", False)
+    set_if_exists("download_video_thumbnails", False)
+    set_if_exists("post_metadata_txt_pattern", "")
 
     return loader
 
@@ -79,12 +79,14 @@ def download_reel(loader: Instaloader, shortcode: str, base_dir: Path) -> Path:
     try:
         post = Post.from_shortcode(loader.context, shortcode)
     except InstaloaderException as exc:
-        raise InstaloaderException(f"Failed to fetch metadata for {shortcode}: {exc}") from exc
+        detail = exc.args[0] if exc.args else str(exc)
+        raise InstaloaderException(f"Failed to fetch metadata for {shortcode}: {detail}") from exc
 
     try:
         loader.download_post(post, target=shortcode)
     except InstaloaderException as exc:
-        raise InstaloaderException(f"Failed to download reel {shortcode}: {exc}") from exc
+        detail = exc.args[0] if exc.args else str(exc)
+        raise InstaloaderException(f"Failed to download reel {shortcode}: {detail}") from exc
 
     target_dir = base_dir / shortcode
     video = next(iter(target_dir.glob(f"{shortcode}*.mp4")), None)
@@ -130,7 +132,7 @@ def resolve_output_path(raw: str) -> Path:
     resolved = candidate.resolve()
     cwd = Path.cwd().resolve()
     if resolved != cwd and cwd not in resolved.parents:
-        raise ValueError("Output directory must stay within the current working directory.")
+        raise ValueError(f"Output directory {resolved} must stay within the current working directory {cwd}.")
     return resolved
 
 
