@@ -21,8 +21,10 @@ from instaloader import (
     InvalidArgumentException,
     Post,
 )
+from requests.cookies import RequestsCookieJar
 
 SHORTCODE_RE = re.compile(r"(?:instagram\.com/(?:reel|reels|p|tv)/)([A-Za-z0-9_-]+)")
+MIN_SHORTCODE_LENGTH = 5
 
 
 def extract_shortcode(candidate: str) -> str:
@@ -33,7 +35,7 @@ def extract_shortcode(candidate: str) -> str:
     if match:
         return match.group(1)
     candidate = candidate.strip()
-    if re.fullmatch(r"[A-Za-z0-9_-]{5,}", candidate):
+    if re.fullmatch(rf"[A-Za-z0-9_-]{{{MIN_SHORTCODE_LENGTH},}}", candidate):
         return candidate
     raise ValueError(f"Could not find a reel shortcode in: {candidate}")
 
@@ -59,8 +61,10 @@ def apply_auth(loader: Instaloader, username: Optional[str], password: Optional[
     ctx = loader.context
     if sessionid:
         # sessionid cookie avoids interactive login prompts; works for accounts with existing access.
+        jar = RequestsCookieJar()
         for domain in [".instagram.com", "instagram.com"]:
-            ctx._session.cookies.set("sessionid", sessionid, domain=domain)
+            jar.set("sessionid", sessionid, domain=domain)
+        ctx.update_cookies(jar)
         ctx.log("Using provided sessionid cookie for authentication.")
         return
     if username:
@@ -75,7 +79,7 @@ def download_reel(loader: Instaloader, shortcode: str, base_dir: Path) -> Path:
     post = Post.from_shortcode(loader.context, shortcode)
     loader.download_post(post, target=shortcode)
     target_dir = base_dir / shortcode
-    video = next(target_dir.glob(f"{shortcode}*.mp4"), None)
+    video = next(iter(target_dir.glob(f"{shortcode}*.mp4")), None)
     return video or target_dir
 
 
