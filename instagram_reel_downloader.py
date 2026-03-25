@@ -23,7 +23,7 @@ from instaloader import (
 )
 from requests.cookies import RequestsCookieJar
 
-SHORTCODE_RE = re.compile(r"(?:https?://)?(?:www\.)?instagram\.com/reel/([A-Za-z0-9_-]+)(?:/|$)", re.IGNORECASE)
+SHORTCODE_RE = re.compile(r"(?i:(?:https?://)?(?:www\.)?instagram\.com)/reel/([A-Za-z0-9_-]+)(?:/|$)")
 MIN_SHORTCODE_LENGTH = 5
 
 
@@ -44,9 +44,9 @@ def configure_loader(output_dir: Path) -> Instaloader:
     # Store each reel in its own folder to keep assets grouped and avoid filename collisions.
     loader = Instaloader(dirname_pattern=str(output_dir / "{target}"), filename_pattern="{shortcode}")
 
-    def set_if_exists(attr: str, value):
+    def set_if_exists(attr: str, config_value):
         if hasattr(loader, attr):
-            setattr(loader, attr, value)
+            setattr(loader, attr, config_value)
 
     set_if_exists("download_comments", False)
     set_if_exists("save_metadata", False)
@@ -132,7 +132,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 def resolve_output_path(raw: str) -> Path:
     candidate = Path(raw).expanduser()
-    resolved = candidate.resolve()
+    resolved = candidate.resolve(strict=False)
+    if resolved.exists():
+        resolved = resolved.resolve()
     cwd = Path.cwd().resolve()
     try:
         resolved.relative_to(cwd)
